@@ -62,6 +62,33 @@ export default function CameraScreen() {
     navigation.navigate('Main')
   }
 
+  async function uploadPicture(picture) {
+    try {
+      const formData = new FormData();
+      formData.append("file", {
+        uri: picture.uri,
+        name: "image_name",
+        type: "image/jpeg",
+      });
+      console.log("picture uri: ", picture.uri);
+  
+      const response = await fetch("http://192.168.1.22:5296/api/Real/89965246-588e-4235-a4bf-7fa9931883c1/upload_photo", {
+        method: "POST",
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        console.log("response was not ok. response: ", response);
+        throw new Error("Failed to upload image");
+      }
+  
+      const data = await response.json();
+      console.log("Upload successful:", data);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  }
+
   function hasBothPictures() {
     return pictures[CameraType.front] !== null && pictures[CameraType.back] !== null
   }
@@ -73,6 +100,8 @@ export default function CameraScreen() {
 
     setPictures({ ...pictures, [type]: picture })
     swapCamera()
+
+    uploadPicture(picture);
   }
 
   return (
