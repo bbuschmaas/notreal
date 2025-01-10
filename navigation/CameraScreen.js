@@ -1,5 +1,5 @@
 import { StyleSheet, View, useWindowDimensions, TouchableOpacity, Image } from 'react-native'
-import { Camera, CameraType } from 'expo-camera';
+import { Camera, CameraType, CameraPictureOptions } from 'expo-camera';
 import { useState, useEffect, useRef } from 'react';
 import { usePosts } from '../contexts/posts'
 import { useProfile } from '../contexts/profile';
@@ -62,15 +62,21 @@ export default function CameraScreen() {
     navigation.navigate('Main')
   }
 
-  async function uploadPicture(picture) {
+  async function uploadRealPictures(back_img, front_img) {
     try {
       const formData = new FormData();
-      formData.append("file", {
-        uri: picture.uri,
-        name: "image_name",
+      formData.append("back_file", {
+        uri: back_img.uri,
+        name: "back_img.jpg",
         type: "image/jpeg",
       });
-      console.log("picture uri: ", picture.uri);
+      formData.append("front_file", {
+        uri: front_img.uri,
+        name: "front_img.jpg",
+        type: "image/jpeg",
+      });
+
+      console.log("picture uris: ", back_img.uri, front_img.uri);
   
       const response = await fetch("http://192.168.1.22:5296/api/Real/89965246-588e-4235-a4bf-7fa9931883c1/upload_photo", {
         method: "POST",
@@ -79,29 +85,52 @@ export default function CameraScreen() {
   
       if (!response.ok) {
         console.log("response was not ok. response: ", response);
-        throw new Error("Failed to upload image");
+        throw new Error("Failed to upload images");
       }
   
       const data = await response.json();
       console.log("Upload successful:", data);
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error("Error uploading images:", error);
     }
   }
 
   function hasBothPictures() {
-    return pictures[CameraType.front] !== null && pictures[CameraType.back] !== null
+    return pictures[CameraType.front] !== null && pictures[CameraType.back] !== null;
   }
 
   async function takePicture() {
-    const picture = await cameraRef.current.takePictureAsync()
-    await cameraRef.current.resumePreview()
-    setCameraReady(false)
+    const picture = await cameraRef.current.takePictureAsync();
+    await cameraRef.current.resumePreview();
+    setCameraReady(false);
 
-    setPictures({ ...pictures, [type]: picture })
-    swapCamera()
+    setPictures({ ...pictures, [type]: picture });
+    swapCamera();
 
-    uploadPicture(picture);
+    //uploadPicture(picture);
+  }
+
+  async function takeRealPictures() {
+    try {
+      const cam_options = {};
+
+      setType(CameraType.back);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const back_img = await cameraRef.current.takePictureAsync(cam_options);
+  
+      setType(CameraType.front);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const front_img = await cameraRef.current.takePictureAsync(cam_options);
+
+      setType(CameraType.back);
+      console.log("img uris: ", back_img.uri, front_img.uri);
+      await uploadRealPictures(back_img, front_img);
+      navigation.navigate('Main')
+  
+  
+    } catch (error) {
+      console.error("Error taking pictures:", error);
+    }
   }
 
   return (
@@ -123,22 +152,23 @@ export default function CameraScreen() {
         </Camera>
       </View>
       <View style={styles.toolsContainer}>
-        <TouchableOpacity onPress={swapCamera} style={[styles.secondary, { marginRight: 20 }]}>
-          <Rotate color="white" width={35} height={35} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={takePicture} style={styles.take} />
-        <TouchableOpacity
-          disabled={!hasBothPictures()}
-          onPress={submitPicture}
-          style={[styles.secondary, {
-            marginLeft: 20,
-          }]}>
-          <Send color={hasBothPictures() ? "white" : "#868e96"} width={35} height={35} />
-        </TouchableOpacity>
+        <TouchableOpacity onPress={takeRealPictures} style={styles.take} />
       </View>
     </View>
   )
 }
+//<TouchableOpacity onPress={swapCamera} style={[styles.secondary, { marginRight: 20 }]}>
+//  <Rotate color="white" width={35} height={35} />
+//</TouchableOpacity>
+//<TouchableOpacity onPress={takePicture} style={styles.take} />
+//<TouchableOpacity
+//  disabled={!hasBothPictures()}
+//  onPress={submitPicture}
+//  style={[styles.secondary, {
+//    marginLeft: 20,
+//  }]}>
+//  <Send color={hasBothPictures() ? "white" : "#868e96"} width={35} height={35} />
+//</TouchableOpacity>
 
 const styles = StyleSheet.create({
   container: {

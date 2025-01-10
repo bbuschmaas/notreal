@@ -4,13 +4,28 @@ import { useNavigation } from '@react-navigation/native';
 import Post from '../components/Post';
 import { usePosts } from '../contexts/posts';
 
+async function getReals() {
+  const url = "http://192.168.1.22:5296/api/Real/89965246-588e-4235-a4bf-7fa9931883c1"
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+
+    const json = await response.json();
+    console.log(json);
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+
 export default function MainScreen() {
   const { posts } = usePosts();
   const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
-      {posts.length == false ?
+      {posts.length == true ?
         <FlatList
           style={styles.feed}
           data={posts}
@@ -42,6 +57,9 @@ export default function MainScreen() {
               }
             } style={styles.noPostsButton}>
             <Text style={styles.noPostsButtonText}>Test GET User by id request</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={async () => getReals()} style={styles.noPostsButton}>
+            <Text style={styles.noPostsButtonText}>Get some damn Reals you fool</Text>
           </TouchableOpacity>
         </View>
       }
