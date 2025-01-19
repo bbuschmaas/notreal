@@ -65,6 +65,9 @@ export default function CameraScreen() {
   async function uploadRealPictures(back_img, front_img) {
     try {
       const formData = new FormData();
+      formData.append("UserId", "3434d184-7e1d-4f22-a682-8227e2a78096");
+      formData.append("Caption", "First be real crated by single api call from App");
+      
       formData.append("back_file", {
         uri: back_img.uri,
         name: "back_img.jpg",
@@ -78,7 +81,7 @@ export default function CameraScreen() {
 
       console.log("picture uris: ", back_img.uri, front_img.uri);
   
-      const response = await fetch("http://192.168.1.22:5296/api/Real/89965246-588e-4235-a4bf-7fa9931883c1/upload_photo", {
+      const response = await fetch("http://192.168.1.22:5296/api/Real", {
         method: "POST",
         body: formData,
       });

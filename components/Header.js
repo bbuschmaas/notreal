@@ -29,7 +29,7 @@ export default function Header({ partial = false, darkMode = false }) {
         </TouchableOpacity>
         }
         <Text style={[styles.title, { color: darkMode ? "#fff" : "#000" }]}>
-          NotReal
+          BistDuReal
         </Text>
         {!partial && <TouchableOpacity>
           <Avatar onPress={() => navigation.push('Initial')} name={handle.substring(1)} />
